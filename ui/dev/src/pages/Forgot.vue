@@ -1,6 +1,6 @@
 <template>
   <s-auth-layout>
-    <s-forgot/>
+    <s-forgot reset-url="/api/sasasa" reset-api="/api/sasa" />
   </s-auth-layout>
 </template>
 

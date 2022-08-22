@@ -1,6 +1,6 @@
 {
   "name": "quasar-ui-sauth",
-  "version": "0.0.1",
+  "version": "0.0.3",
   "author": "Cecep Yusuf <cheyuz@gmail.com>",
   "description": "A Simple Auth Component",
   "license": "MIT",
@@ -37,7 +37,7 @@
     "cssnano": "^4.1.10",
     "fs-extra": "^8.1.0",
     "open": "^7.3.0",
-    "pinia": "^2.0.19",
+    "pinia": "^2.0.11",
     "postcss": "^8.1.9",
     "quasar": "^2.0.0",
     "rimraf": "^3.0.0",
@@ -58,5 +58,8 @@
     "last 4 ChromeAndroid versions",
     "last 4 FirefoxAndroid versions",
     "last 4 iOS versions"
-  ]
+  ],
+  "dependencies": {
+    "pinia-plugin-persistedstate": "^2.1.1"
+  }
 }

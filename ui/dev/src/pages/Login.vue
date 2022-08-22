@@ -1,6 +1,6 @@
 <template>
   <s-auth-layout>
-    <s-login app-name="TSS" register register-to="/register" />
+    <s-login app-name="TSS" register register-to="/register" login-api="/api/login" />
   </s-auth-layout>
 </template>
 

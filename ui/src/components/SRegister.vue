@@ -54,7 +54,7 @@
 import {useRouter} from "vue-router";
 import {computed, onMounted, ref} from "vue";
 import {Notify} from "quasar";
-import {api} from "../../dev/src/boot/axios";
+import {api} from "src/boot/axios";
 
 export default {
   name: "SRegister",

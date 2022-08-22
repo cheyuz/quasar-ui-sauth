@@ -1,15 +1,21 @@
 <template>
   <q-card class="q-pa-lg " flat>
     <q-card-section>
-      <q-form class="q-gutter-md">
+      <q-form class="q-gutter-md" ref="form">
         <q-input outlined clearable v-model="email" type="email" label="email" :disable="loading"
-                 :error="error.email.is_error" :error-message="error.email.message">
+                 :rules="[
+                     val => !!val || 'Email is required',
+                     val => /.+@.+\..+/.test(val) || 'Email is invalid'
+                 ]"
+        >
           <template v-slot:prepend>
             <q-icon name="email"/>
           </template>
         </q-input>
         <q-input outlined clearable v-model="password" :type="passwordFieldType" label="password"
-                 :disable="loading" :error="error.password.is_error" :error-message="error.password.message">
+                 :disable="loading" :rules="[
+                     val => !!val || 'Password is required',
+                 ]">
           <template v-slot:prepend>
             <q-icon name="lock"/>
           </template>
@@ -35,6 +41,7 @@
 import {useRouter} from "vue-router";
 import {onMounted, ref} from "vue";
 import {Notify} from "quasar";
+import {api} from "../boot/axios";
 
 export default {
   name: "SLogin",
@@ -46,23 +53,20 @@ export default {
     registerTo: {
       type: String,
       default: "/register"
+    },
+    loginApi: {
+      type: String,
+      default: "/api/login",
+      required: true
     }
   },
-  setup(props) {
+  emits: ["success"],
+  setup(props, {emit}) {
     // const auth = useAuthStore();
     const router = useRouter();
     const email = ref('');
     const password = ref('');
-    const error = ref({
-      email: {
-        is_error: false,
-        message: null,
-      },
-      password: {
-        is_error: false,
-        message: null,
-      },
-    });
+    const form = ref(null);
 
     const visibility = ref(false);
     const passwordFieldType = ref('password');
@@ -75,48 +79,59 @@ export default {
       visibilityIcon.value = visibility.value ? 'visibility_off' : 'visibility';
     }
 
-    const submit = () => {
+    const submit = async () => {
+      const valid = await form.value.validate();
+      if (!valid) return;
+
       loading.value = true;
-      // api.get('/sanctum/csrf-cookie').then(res => {
-      //   api.post('/api/login', {
-      //     email: email.value,
-      //     password: password.value,
-      //   }).then(res => {
-      //     if (res.data.message === 'success') {
-      //       auth.login(res.data.user, res.data.token, res.data.roles, res.data.roles_display);
-      //
-      //       router.push('/');
-      //       Notify.create({
-      //         message: 'You have successfully login to the application.',
-      //         position: 'bottom',
-      //         type: 'positive'
-      //       });
-      //     } else {
-      //       Notify.create({
-      //         message: res.data.message,
-      //         position: 'top',
-      //         type: 'negative'
-      //       });
-      //     }
-      //     loading.value = false;
-      //   }).catch(err => {
-      //     // if 403
-      //     if (err.response.status === 401) {
-      //       Notify.create({
-      //         message: 'Invalid email or password.',
-      //         position: 'top',
-      //         type: 'negative'
-      //       });
-      //     } else {
-      //       Notify.create({
-      //         message: 'Something went wrong.',
-      //         position: 'top',
-      //         type: 'negative'
-      //       });
-      //     }
-      //     loading.value = false;
-      //   });
-      // });
+      api.get('/sanctum/csrf-cookie').then(res => {
+        api.post(props.loginApi, {
+          email: email.value,
+          password: password.value,
+        }).then(res => {
+          if (res.data.message === 'success' || res.data.success || res.data.status === 'success') {
+            // auth.login(res.data.user, res.data.token, res.data.roles, res.data.roles_display);
+            emit('success', res.data);
+
+            router.push('/');
+            Notify.create({
+              message: 'You have successfully login to the application.',
+              position: 'bottom',
+              type: 'positive'
+            });
+          } else {
+            Notify.create({
+              message: res.data.message,
+              position: 'top',
+              type: 'negative'
+            });
+          }
+          loading.value = false;
+        }).catch(err => {
+          // if 403
+          if (err.response.status === 401) {
+            Notify.create({
+              message: 'Invalid email or password.',
+              position: 'top',
+              type: 'negative'
+            });
+          } else {
+            Notify.create({
+              message: err.message,
+              position: 'top',
+              type: 'negative'
+            });
+          }
+          loading.value = false;
+        });
+      }).catch(err => {
+        Notify.create({
+          message: err.message,
+          position: 'top',
+          type: 'negative'
+        });
+        loading.value = false;
+      });
     }
 
     onMounted(() => {
@@ -126,8 +141,8 @@ export default {
     });
 
     return {
-      loading, error,
-      email, password,
+      loading,
+      email, password, form,
       visibility,
       passwordFieldType,
       visibilityIcon,

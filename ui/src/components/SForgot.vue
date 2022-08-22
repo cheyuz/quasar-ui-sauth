@@ -36,18 +36,26 @@
 <script>
 import {ref} from "vue";
 import {api} from "src/boot/axios";
+import {useRouter} from "vue-router";
 
 export default {
   name: "SForgot",
   props: {
     resetApi: {
       type: String,
-      default: "/api/reset-password"
+      default: "/api/reset-password",
+      required: true,
+    },
+    resetUrl: {
+      type: String,
+      default: "/reset-password",
+      required: true,
     }
   },
   setup(props) {
     const form = ref(null);
     const email = ref('');
+    const router = useRouter();
 
     const send = async () => {
       const valid = await form.value.validate();
@@ -58,6 +66,7 @@ export default {
           if(res.data.success){
             console.log('Success');
             // push to reset password page
+            router.push(props.resetUrl);
           } else {
             alert(res.data.message);
           }
@@ -70,6 +79,7 @@ export default {
     return {
       email,
       form,
+      send
     }
   }
 }
